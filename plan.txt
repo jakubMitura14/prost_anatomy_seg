@@ -1,0 +1,9 @@
+1) preprocess using nnunet
+2) infer using https://github.com/DIAGNijmegen/AbdomenMRUS-prostate-segmentation/blob/main/nnUNetTrainerV2_Loss_FL_and_CE.py
+3) get segmentation on non prostate dataset use swin transformer - pretraining
+4) fine tune on our dataset 
+pretrianing with nnunet https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/pretraining_and_finetuning.md
+
+last) get ensemble https://arxiv.org/abs/2201.11440
+
+region based traiing - so whole prostate and its segments at once https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/region_based_training.md
