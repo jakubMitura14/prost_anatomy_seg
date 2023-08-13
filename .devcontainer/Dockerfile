@@ -198,10 +198,10 @@ tar -xf elastix-5.0.1-linux.tar.bz2
 
 # /workspaces/konwersjaJsonData/prepareNNunet.py
 
-# RUN mkdir ${HOME}/nnUNet  && \
-#     git clone https://github.com/MIC-DKFZ/nnUNet.git  ${HOME}/nnUNet && \
-#     cd ${HOME}/nnUNet  && \
-#     python3.9 -m pip  install -e . 
+RUN mkdir ${HOME}/nnUNet  && \
+    git clone https://github.com/MIC-DKFZ/nnUNet.git  ${HOME}/nnUNet && \
+    cd ${HOME}/nnUNet  && \
+    python3.9 -m pip  install -e . 
 
 # ENV nnUNet_n_proc_DA=8
 RUN python3.9 -m pip  --no-cache-dir install --upgrade git+https://github.com/julien-blanchon/hiddenlayer.git focal_loss_torch

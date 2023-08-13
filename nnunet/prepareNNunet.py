@@ -289,7 +289,7 @@ def add_files(group,main_modality,modalities_of_intrest,reg_prop,elacticPath,tra
     
     
     label_new_path,out_pathsDict=prepare_out_paths(group,modalities_of_intrest,labelsTrFolder,imagesTrFolder,non_mri_inputs,channel_names )
-
+    label_new_path_prim=label_new_path
     temp_dir = tempfile.mkdtemp() # temporary directory
     modalities_of_intrest_without_main= list(filter( lambda el: el!=main_modality , modalities_of_intrest))
     modalities=[]
@@ -316,12 +316,13 @@ def add_files(group,main_modality,modalities_of_intrest,reg_prop,elacticPath,tra
     #adding to the list the labels from main modality thay did not needed to be registered
     labels=np.array(labels+group[1][main_modality][1]).flatten()
     # print(f"labels {labels}  group[1][main_modality] {group[1][main_modality]} ")
+    example_scan=[]
     if(len(labels)>0):
         zipped_modalit_path = list(zip(modalities,mris))
         # print(f"zipped_modalit_path {zipped_modalit_path}")
         #zipping for starmap use        
         zipped_modalit_path= list(map( lambda tupl:(tupl[1], out_pathsDict[tupl[0]]) ,zipped_modalit_path))
-        
+        # print(f"mmmm mris {mris} modalities_of_intrest {modalities_of_intrest}")
         if(is_to_preprocess):
             mris_for_sample=[mris[2],mris[0],mris[1]]
             sample = Sample(
@@ -338,34 +339,40 @@ def add_files(group,main_modality,modalities_of_intrest,reg_prop,elacticPath,tra
             # perform preprocessing
             sample.preprocess()
             # print(f"ssss sample.scans {sample.scans}")
-            list(itertools.starmap(write_file,list(zip(sample.scans, mris_for_sample ))))
+            out=[zipped_modalit_path[2][1],zipped_modalit_path[0][1],zipped_modalit_path[1][1]]
+            list(itertools.starmap(write_file,list(zip(sample.scans, out ))))
+            example_scan=zipped_modalit_path[2][1]
+
         
-        
-        
+        prost_im=elastixRegister.reg_a_to_b_by_metadata_single_f(example_scan,group[1][non_mri_inputs[0]][1][0],sitk.sitkNearestNeighbor)
+
+
+        sitk.WriteImage(prost_im, out_pathsDict[non_mri_inputs[0]])
         # # write preprocessed scans to nnUNet input directory
         # for i, scan in enumerate(sample.scans):
         #     path = self.nnunet_inp_dir / f"scan_{i:04d}.nii.gz"
         #     atomic_image_write(scan, path)
         
+
         
         
         
+        # zipped_modalit_path_add= list(map( lambda el:(group[1][el][1][0], out_pathsDict[el]) ,non_mri_inputs))
         
-        zipped_modalit_path_add= list(map( lambda el:(group[1][el][1][0], out_pathsDict[el]) ,non_mri_inputs))
         
+        # # zipped_modalit_path=zipped_modalit_path+zipped_modalit_path_add
+        # zipped_modalit_path=zipped_modalit_path_add
+        # # print(f"zipped_modalit_path_add {zipped_modalit_path_add} \n  ")
+        # # print(f"zipped_modalit_path_add {zipped_modalit_path_add} \n zipped_modalit_path {zipped_modalit_path} \n out_pathsDict {out_pathsDict}  ")
         
-        zipped_modalit_path=zipped_modalit_path+zipped_modalit_path_add
-        # print(f"zipped_modalit_path_add {zipped_modalit_path_add} \n  ")
-        # print(f"zipped_modalit_path_add {zipped_modalit_path_add} \n zipped_modalit_path {zipped_modalit_path} \n out_pathsDict {out_pathsDict}  ")
-        
-        zipped_modalit_path= list(filter(  lambda tupl: tupl[0]!=" " and tupl[1]!=" ",zipped_modalit_path))
+        # zipped_modalit_path= list(filter(  lambda tupl: tupl[0]!=" " and tupl[1]!=" ",zipped_modalit_path))
         
         
         #as we already have prepared the destination paths and sources for images we need now to copy files
         # we need to remember that we are  getting from mha to nii gz
 
 
-        list(itertools.starmap(copy_changing_type ,zipped_modalit_path ))
+        # list(itertools.starmap(copy_changing_type ,zipped_modalit_path ))
         # list(itertools.starmap(copy_changing_type ,zipped_modalit_path_add ))
         _,new_mri_paths= list(toolz.sandbox.core.unzip(zipped_modalit_path))
         new_mri_paths=np.unique(list(new_mri_paths)+non_mri_inputs)
@@ -377,8 +384,11 @@ def add_files(group,main_modality,modalities_of_intrest,reg_prop,elacticPath,tra
 
         newPaths=newPaths+non_mri_inputs_new_paths
 
+        
+ 
         label_new_paths,newPaths= process_labels(labels,group,main_modality,label_new_path,newPaths,out_pathsDict)
-
+        elastixRegister.reg_a_to_b_by_metadata_single_g(example_scan,label_new_path_prim,sitk.sitkNearestNeighbor)
+        
         for label_new_path in label_new_paths:
             newPaths.append(('label',label_new_path ))
         #copying label holding segmentation of full prostate gland
@@ -502,7 +512,7 @@ def main_prepare_nnunet(dataset_id, modalities_of_intrest,channel_names,label_na
     "file_ending": ".nii.gz",
     "overwrite_image_reader_writer": "SimpleITKIO",
     "regions_class_order": [7,6,5,4,3,2,1],  
-    # "normalization_schemes" : "noNorm",
+    "normalization_schemes" : ["zscore","noNorm","noNorm","noNorm","noNorm"],
     "numTraining" : len(label_paths),
     "nnUNetPlans" : ['2d','3d_lowres','3d_cascade_fullres', '3d_fullres']
     }

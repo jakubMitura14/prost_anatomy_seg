@@ -43,7 +43,10 @@ from prepareNNunet import *
 #metadata directory
 resCSVDir='/home/sliceruser/workspaces/konwersjaJsonData/outCsv/resCSV.csv'
 #directory with inferred prostates
-dir_inferred_prost='/workspaces/prost_anatomy_seg/data/my_prost_infered'
+
+dir_inferred_prost='/home/sliceruser/workspaces/konwersjaJsonData/my_prost_infered'
+
+# dir_inferred_prost='/workspaces/prost_anatomy_seg/data/my_prost_infered'
 sourceFrame = pd.read_csv(resCSVDir) 
 new_col_name= 'inferred_pg'
 
@@ -57,11 +60,13 @@ def get_id_from_file_name(path_str):
 def add_t2w_to_name(source):
     if(source==' '):
         return ' '
-    if('t2w' in source):
-        return source
-    new_path= source.replace('.nii.gz','_t2w.nii.gz')
-    copy_changing_type(source, new_path)
-    return new_path
+    # if('t2w' in source):
+    #     return source
+    # new_path= source.replace('.nii.gz','_t2w.nii.gz')
+    # copy_changing_type(source, new_path)
+    # return new_path
+    return source
+    
 
 def add_inferred_full_prost_to_dataframe(dir_inferred_prost, df,new_col_name):
     """ 
@@ -91,7 +96,7 @@ main_modality = 't2w'
 sourceFrame=add_inferred_full_prost_to_dataframe(dir_inferred_prost, sourceFrame,new_col_name)
 # modalities that we want to include in the model
 main_modality = 't2w'
-modalities_of_intrest=['t2w']
+modalities_of_intrest=['t2w','adc','hbv']
 
 prostate_col= 'pg_noSeg'
 new_col_name=prostate_col
@@ -108,7 +113,9 @@ label_cols=anatomic_cols
 # label_cols=anatomic_cols+[prostate_col]
 channel_names={  
     "0": "t2w", 
-    "1": new_col_name
+    "1": "adc", 
+    "2": "hbv", 
+    "3": new_col_name
     }
 
 

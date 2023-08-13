@@ -272,6 +272,15 @@ def reg_a_to_b_by_metadata_single_c(fixed_image_path,moving_image_path,interpola
     return sitk.GetArrayFromImage(resampled)
 
 
+def reg_a_to_b_by_metadata_single_f(fixed_image_path,moving_image_path,interpolator):
+
+    fixed_image=sitk.ReadImage(fixed_image_path)
+    moving_image=sitk.ReadImage(moving_image_path)
+    arr=sitk.GetArrayFromImage(moving_image)
+    resampled=sitk.Resample(moving_image, fixed_image, sitk.Transform(3, sitk.sitkIdentity), interpolator, 0)
+    return resampled
+
+
 def reg_a_to_b_by_metadata_single_b(fixed_image_path,moving_image_path,out_folder, interpolator=sitk.sitkNearestNeighbor):
     if(len(moving_image_path)<4):
         moving_image_path=moving_image_path[0]
@@ -288,6 +297,28 @@ def reg_a_to_b_by_metadata_single_b(fixed_image_path,moving_image_path,out_folde
   
     writer = sitk.ImageFileWriter()
     new_path= join(out_folder,moving_image_path.split('/')[-1])
+    writer.SetFileName(new_path)
+    writer.Execute(resampled)
+
+    return new_path
+
+
+def reg_a_to_b_by_metadata_single_g(fixed_image_path,moving_image_path,out_folder, interpolator=sitk.sitkNearestNeighbor):
+    if(len(moving_image_path)<4):
+        moving_image_path=moving_image_path[0]
+    fixed_image=sitk.ReadImage(fixed_image_path)
+    moving_image=sitk.ReadImage(moving_image_path)
+
+    # fixed_image=sitk.Cast(fixed_image, sitk.sitkUInt8)
+    # moving_image=sitk.Cast(moving_image, sitk.sitkInt)
+    
+    arr=sitk.GetArrayFromImage(moving_image)
+    resampled=sitk.Resample(moving_image, fixed_image, sitk.Transform(3, sitk.sitkIdentity), interpolator, 0)
+    
+    # print(f" prim sum {np.sum(sitk.GetArrayFromImage(sitk.ReadImage(moving_image_path)).flatten())} \n suuum {np.sum(sitk.GetArrayFromImage(resampled).flatten())} ")
+  
+    writer = sitk.ImageFileWriter()
+    new_path= moving_image_path
     writer.SetFileName(new_path)
     writer.Execute(resampled)
 
